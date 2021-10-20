@@ -1,8 +1,12 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:carrot_clone/components/manner_temperature_widget.dart';
+import 'package:carrot_clone/utils/data_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/svg.dart';
 
 class DetaulCotentsView extends StatefulWidget {
   final Map<String, String> data;
@@ -13,13 +17,46 @@ class DetaulCotentsView extends StatefulWidget {
   _DetaulCotentsViewState createState() => _DetaulCotentsViewState();
 }
 
-class _DetaulCotentsViewState extends State<DetaulCotentsView> {
+class _DetaulCotentsViewState extends State<DetaulCotentsView>
+    with SingleTickerProviderStateMixin {
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   late Size size;
 
   late List<String> imgList;
 
   int _current = 0;
   final CarouselController _controller = CarouselController();
+
+  final ScrollController _scrollController = ScrollController();
+  double scrollOffset = 0;
+
+  late AnimationController _animationController;
+  late Animation _colorTween;
+
+  late bool favoriteContent;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(vsync: this);
+    _colorTween = ColorTween(begin: Colors.white, end: Colors.black)
+        .animate(_animationController);
+
+    _scrollController.addListener(() {
+      setState(() {
+        if (_scrollController.offset > 255) {
+          scrollOffset = 255;
+        } else {
+          scrollOffset = _scrollController.offset;
+        }
+
+        _animationController.value = scrollOffset / 255;
+      });
+    });
+
+    favoriteContent = false;
+  }
 
   @override
   void didChangeDependencies() {
@@ -36,22 +73,25 @@ class _DetaulCotentsViewState extends State<DetaulCotentsView> {
     ];
   }
 
+  Widget _makeIcon(IconData icon) {
+    return AnimatedBuilder(
+      animation: _colorTween,
+      builder: (context, child) => Icon(icon, color: _colorTween.value),
+    );
+  }
+
   AppBar _appBar() {
     return AppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white.withAlpha(scrollOffset.toInt()),
       elevation: 0,
       leading: IconButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Icon(Icons.arrow_back, color: Colors.white)),
+          icon: _makeIcon(Icons.arrow_back)),
       actions: [
-        IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.share, color: Colors.white)),
-        IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_vert, color: Colors.white)),
+        IconButton(onPressed: () {}, icon: _makeIcon(Icons.share)),
+        IconButton(onPressed: () {}, icon: _makeIcon(Icons.more_vert)),
       ],
     );
   }
@@ -202,61 +242,148 @@ class _DetaulCotentsViewState extends State<DetaulCotentsView> {
   }
 
   Widget _bodyWidget() {
-    return CustomScrollView(slivers: [
-      SliverList(
-        delegate: SliverChildListDelegate([
-          _makeSliderImages(),
-          _sellerInfo(),
-          _line(),
-          _contentDetail(),
-          _line(),
-          _otherCellContents(),
-        ]),
-      ),
-      SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        sliver: SliverGrid(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-          ),
-          delegate: SliverChildListDelegate(List.generate(20, (index) {
-            return Container(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(height: 120, color: Colors.grey)),
-                  const Text("상품제목", style: TextStyle(fontSize: 14)),
-                  const Text(
-                    "금액",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList()),
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: [
+        SliverList(
+          delegate: SliverChildListDelegate([
+            _makeSliderImages(),
+            _sellerInfo(),
+            _line(),
+            _contentDetail(),
+            _line(),
+            _otherCellContents(),
+          ]),
         ),
-      ),
-    ]);
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+            ),
+            delegate: SliverChildListDelegate(List.generate(10, (index) {
+              return Container(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(height: 120, color: Colors.grey)),
+                    const Text("상품제목", style: TextStyle(fontSize: 14)),
+                    const Text(
+                      "금액",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList()),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _bottomNavigationBar() {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
       width: size.width,
       height: 55,
-      color: Colors.redAccent,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                favoriteContent = !favoriteContent;
+              });
+
+              // ignore: deprecated_member_use
+              scaffoldKey.currentState?.showSnackBar(
+                SnackBar(
+                  content: Text(favoriteContent ? "관심목록에 추가" : "관심목록에서 삭제"),
+                  duration: Duration(
+                    milliseconds: 1000,
+                  ),
+                ),
+              );
+            },
+            child: SvgPicture.asset(
+              favoriteContent
+                  ? "assets/svg/heart_on.svg"
+                  : "assets/svg/heart_off.svg",
+              width: 25,
+              height: 25,
+              color: Color(0xfff08f4f),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(
+              left: 15,
+              right: 10,
+            ),
+            width: 1,
+            height: 30,
+            color: Colors.grey.withOpacity(0.3),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                DataUtils.calcStrongToWon(widget.data["price"]!),
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Text(
+                "가격제안불가",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 5,
+                    horizontal: 15,
+                  ),
+                  child: const Text(
+                    "채팅으로 거래하기",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: const Color(0xfff08f4f),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
       extendBodyBehindAppBar: true,
       appBar: _appBar(),
       body: _bodyWidget(),

@@ -1,5 +1,6 @@
 import 'package:carrot_clone/page/detail.dart';
 import 'package:carrot_clone/repository/contents_repository.dart';
+import 'package:carrot_clone/utils/data_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -32,15 +33,6 @@ class _HomeState extends State<Home> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _contentsRepository = ContentsRepository();
-  }
-
-  final oCcy = NumberFormat("#,###", "ko_KR");
-  String calcStrongToWon(String priceString) {
-    if (priceString == "무료나눔") {
-      return priceString;
-    }
-
-    return "${oCcy.format(int.parse(priceString))}원";
   }
 
   _loadContents() {
@@ -107,12 +99,16 @@ class _HomeState extends State<Home> {
         itemBuilder: (BuildContext _context, int index) {
           return GestureDetector(
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (BuildContext context) {
-                return DetaulCotentsView(
-                  data: data[index],
-                );
-              }));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (BuildContext context) {
+                    return DetaulCotentsView(
+                      data: data[index],
+                    );
+                  },
+                ),
+              );
             },
             child: Container(
               color: Colors.transparent,
@@ -143,7 +139,8 @@ class _HomeState extends State<Home> {
                                   fontSize: 12,
                                   color: Colors.black.withOpacity(0.3))),
                           const SizedBox(height: 5),
-                          Text(calcStrongToWon(datas[index]["price"]!),
+                          Text(
+                              DataUtils.calcStrongToWon(datas[index]["price"]!),
                               style:
                                   const TextStyle(fontWeight: FontWeight.w500)),
                           Expanded(
