@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:carrot_clone/components/manner_temperature_widget.dart';
+import 'package:carrot_clone/repository/contents_repository.dart';
 import 'package:carrot_clone/utils/data_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -33,11 +34,15 @@ class _DetaulCotentsViewState extends State<DetaulCotentsView>
   late AnimationController _animationController;
   late Animation _colorTween;
 
-  late bool favoriteContent;
+  bool favoriteContent = false;
+
+  late ContentsRepository _contentsRepository;
 
   @override
   void initState() {
     super.initState();
+
+    _contentsRepository = ContentsRepository();
 
     _animationController = AnimationController(vsync: this);
     _colorTween = ColorTween(begin: Colors.white, end: Colors.black)
@@ -55,7 +60,16 @@ class _DetaulCotentsViewState extends State<DetaulCotentsView>
       });
     });
 
-    favoriteContent = false;
+    _loadMyFavoriteContentState();
+  }
+
+  _loadMyFavoriteContentState() async {
+    bool ck =
+        await _contentsRepository.isMyFavoriteContent(widget.data["cid"]!);
+
+    setState(() {
+      favoriteContent = ck;
+    });
   }
 
   @override
@@ -298,7 +312,14 @@ class _DetaulCotentsViewState extends State<DetaulCotentsView>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
-            onTap: () {
+            onTap: () async {
+              if (favoriteContent) {
+                await _contentsRepository
+                    .deleteMyFavoriteContent(widget.data["cid"]!);
+              } else {
+                await _contentsRepository.addMyFavoriteContent(widget.data);
+              }
+
               setState(() {
                 favoriteContent = !favoriteContent;
               });
@@ -307,7 +328,7 @@ class _DetaulCotentsViewState extends State<DetaulCotentsView>
               scaffoldKey.currentState?.showSnackBar(
                 SnackBar(
                   content: Text(favoriteContent ? "관심목록에 추가" : "관심목록에서 삭제"),
-                  duration: Duration(
+                  duration: const Duration(
                     milliseconds: 1000,
                   ),
                 ),
@@ -333,6 +354,7 @@ class _DetaulCotentsViewState extends State<DetaulCotentsView>
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 DataUtils.calcStrongToWon(widget.data["price"]!),
