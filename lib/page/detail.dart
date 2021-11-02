@@ -9,16 +9,16 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 
-class DetaulCotentsView extends StatefulWidget {
-  final Map<String, String> data;
+class DetailCotentsView extends StatefulWidget {
+  final Map<String, dynamic> data;
 
-  const DetaulCotentsView({Key? key, required this.data}) : super(key: key);
+  const DetailCotentsView({Key? key, required this.data}) : super(key: key);
 
   @override
-  _DetaulCotentsViewState createState() => _DetaulCotentsViewState();
+  _DetailCotentsViewState createState() => _DetailCotentsViewState();
 }
 
-class _DetaulCotentsViewState extends State<DetaulCotentsView>
+class _DetailCotentsViewState extends State<DetailCotentsView>
     with SingleTickerProviderStateMixin {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   late Size size;

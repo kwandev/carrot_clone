@@ -103,7 +103,7 @@ class _HomeState extends State<Home> {
                 context,
                 MaterialPageRoute(
                   builder: (BuildContext context) {
-                    return DetaulCotentsView(
+                    return DetailCotentsView(
                       data: data[index],
                     );
                   },
@@ -175,26 +175,30 @@ class _HomeState extends State<Home> {
 
   Widget _bodyWidget() {
     return FutureBuilder(
-        future: _loadContents(),
-        builder: (BuildContext context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      future: _loadContents(),
+      builder: (BuildContext context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          if (snapshot.hasError) {
-            return const Center(child: Text("데이터 오류"));
-          }
+        if (snapshot.hasError) {
+          return const Center(child: Text("데이터 오류"));
+        }
 
-          if (snapshot.hasData) {
-            return _makeDataList(snapshot.data);
-          }
+        if (snapshot.hasData) {
+          return _makeDataList(snapshot.data);
+        }
 
-          return const Center(child: Text('해당 지역에 데이터가 없습니다'));
-        });
+        return const Center(child: Text('해당 지역에 데이터가 없습니다'));
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _appBar(), body: _bodyWidget());
+    return Scaffold(
+      appBar: _appBar(),
+      body: _bodyWidget(),
+    );
   }
 }

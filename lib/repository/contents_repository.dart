@@ -277,7 +277,7 @@ class ContentsRepository extends LocalStorageRepository {
     storeValue(MY_FAVORITE_STORE_KEY, jsonEncode(list));
   }
 
-  addMyFavoriteContent(Map<String, String> content) async {
+  addMyFavoriteContent(Map<String, dynamic> content) async {
     List<dynamic> favoriteContentList = await loadFavoriteContents();
     favoriteContentList.add(content);
     updateFavoriteContent(favoriteContentList);

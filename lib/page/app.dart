@@ -1,3 +1,4 @@
+import 'package:carrot_clone/page/favorite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -23,7 +24,7 @@ class _AppState extends State<App> {
       case 3:
         return Container();
       case 4:
-        return Container();
+        return MyFavorite();
       default:
         return Home();
     }
@@ -66,8 +67,9 @@ class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // appBar: _appBar(),
-        body: _bodyWidget(),
-        bottomNavigationBar: _bottomNavigationBarWidget());
+      // appBar: _appBar(),
+      body: _bodyWidget(),
+      bottomNavigationBar: _bottomNavigationBarWidget(),
+    );
   }
 }
